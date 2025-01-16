@@ -24,8 +24,6 @@
             <h2 class="text-2xl font-bold mb-4">Referral Program</h2>
             <p class="mb-4">Invite friends to earn more CosmicCoin!</p>
             <button id="inviteButton" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full">Invite a Friend</button>
-            <p id="inviteMessage" class="mt-4 text-green-500 font-bold hidden">You earned 10 CosmicCoin!</p>
-            <p id="inviteCount" class="mt-2 text-gray-700">Total Invites: 0</p>
             <div id="shareOptions" class="hidden mt-4 grid grid-cols-2 gap-2">
                 <button id="copyBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Copy Link</button>
                 <button id="emailBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Share via Email</button>
@@ -43,54 +41,93 @@
     </footer>
 
     <script>
-        // Constants
-        const WAPCHAT_APP_LINK = 'https://apkpure.com/wapchat/wapchat.actb';
-        const TELEGRAM_BOT_LINK = 'https://t.me/CosmicCoinGalaxyAirdrop_Bot';
-        const WAPCHAT_INFO = 'Wapchat: A social networking platform connecting people, fostering relationships, and sparking conversations.';
-        const AIRDROP_INSTRUCTIONS = [
-            "1. Sign up on the Wapchat app",
-            "2. After successful sign-up, click the side menu button",
-            "3. Locate and select 'Cosmic Airdrop'",
-            "4. Start earning CosmicCoin!"
-        ];
+    // Constants
+    const WAPCHAT_APP_LINK = 'https://apkpure.com/wapchat/wapchat.actb';
+    const TELEGRAM_BOT_LINK = 'https://t.me/CosmicCoinGalaxyAirdrop_Bot';
+    const WAPCHAT_INFO = 'Wapchat: A social networking platform connecting people, fostering relationships, and sparking conversations.';
+    const AIRDROP_INSTRUCTIONS = [
+        "1. Sign up on the Wapchat app",
+        "2. After successful sign-up, click the side menu button",
+        "3. Locate and select 'Cosmic Airdrop'",
+        "4. Start earning CosmicCoin!"
+    ];
 
-        let inviteCount = 0;
+    // Generate a unique referral code
+    function generateReferralCode() {
+        return 'CC' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    }
 
-        // Show a message and update invite count
-        function handleInviteClick() {
-            inviteCount++;
-            document.getElementById('inviteMessage').classList.remove('hidden');
-            document.getElementById('inviteCount').textContent = `Total Invites: ${inviteCount}`;
-        }
-
-        // Initialize the invite functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const inviteButton = document.getElementById('inviteButton');
-            inviteButton.addEventListener('click', handleInviteClick);
-
-            const shareOptions = document.getElementById('shareOptions');
-            const referralCode = 'CC' + Math.random().toString(36).substr(2, 8).toUpperCase();
-            const shareText = `Join me in earning CosmicCoin through the CosmicCoin Galaxy Airdrop!
+    // Create share text
+    function createShareText(referralCode) {
+        const telegramLink = `${TELEGRAM_BOT_LINK}?start=${referralCode}`;
+        return `Join me in earning CosmicCoin through the CosmicCoin Galaxy Airdrop!
 
 ${WAPCHAT_INFO}
 
 Airdrop Instructions:
 ${AIRDROP_INSTRUCTIONS.join('\n')}
 
-Telegram Mini App: ${TELEGRAM_BOT_LINK}?start=${referralCode}
+Telegram Mini App: ${telegramLink}
 
 Wapchat App: ${WAPCHAT_APP_LINK}`;
+    }
 
-            inviteButton.addEventListener('click', () => {
-                shareOptions.classList.toggle('hidden');
-            });
+    // Show toast message
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+        document.body.appendChild(toast);
+        setTimeout(() => document.body.removeChild(toast), 3000);
+    }
 
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert('Copied to clipboard!');
-                });
-            });
+    // Sharing functions
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text)
+            .then(() => showToast('Copied to clipboard!'))
+            .catch(() => showToast('Failed to copy', 'error'));
+    }
+
+    function shareViaEmail(subject, body) {
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+
+    function shareViaTwitter(text) {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareViaFacebook(text) {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(WAPCHAT_APP_LINK)}&quote=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareViaWebShare(title, text, url) {
+        if (navigator.share) {
+            navigator.share({ title, text, url })
+                .then(() => showToast('Shared successfully!'))
+                .catch(() => showToast('Error sharing', 'error'));
+        } else {
+            showToast('Web Share not supported', 'error');
+        }
+    }
+
+    // Initialize the invite functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const inviteButton = document.getElementById('inviteButton');
+        const shareOptions = document.getElementById('shareOptions');
+        const referralCode = generateReferralCode();
+        const shareText = createShareText(referralCode);
+        const shareTitle = 'Join the CosmicCoin Galaxy Airdrop and Wapchat!';
+
+        inviteButton.addEventListener('click', () => {
+            shareOptions.classList.toggle('hidden');
         });
+
+        document.getElementById('copyBtn').addEventListener('click', () => copyToClipboard(shareText));
+        document.getElementById('emailBtn').addEventListener('click', () => shareViaEmail(shareTitle, shareText));
+        document.getElementById('twitterBtn').addEventListener('click', () => shareViaTwitter(shareText));
+        document.getElementById('facebookBtn').addEventListener('click', () => shareViaFacebook(shareText));
+        document.getElementById('moreOptionsBtn').addEventListener('click', () => shareViaWebShare(shareTitle, shareText, WAPCHAT_APP_LINK));
+    });
     </script>
 </body>
 </html>
