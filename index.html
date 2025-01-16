@@ -57,101 +57,111 @@
 const WAPCHAT_APP_LINK = 'https://apkpure.com/wapchat/wapchat.actb';
 const TELEGRAM_BOT_LINK = 'https://t.me/CosmicCoinGalaxyAirdrop_Bot';
 
+// Wapchat information
+const WAPCHAT_INFO = 'Wapchat: A social networking platform connecting people, fostering relationships, and sparking conversations.';
+
+// Airdrop instructions
+const AIRDROP_INSTRUCTIONS = [
+    "1. Sign up on the Wapchat app",
+    "2. After successful sign-up, click the side menu button",
+    "3. Locate and select 'Cosmic Airdrop'",
+    "4. Start earning CosmicCoin!"
+];
+
 // Generate a unique referral code
 function generateReferralCode() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return 'CC' + Math.random().toString(36).substr(2, 8).toUpperCase();
 }
 
 // Invite friend function
 function inviteFriend() {
     const referralCode = generateReferralCode();
-    const telegramLink = `${TELEGRAM_BOT_LINK}?start=ar0978585297?ref=${referralCode}`;
-    const shareText = 'Join me in earning CosmicCoin through the CosmicCoin Galaxy Airdrop. Use my referral link to get started! Also, check out Wapchat, a social networking platform for connecting people and fostering relationships.';
+    const telegramLink = `${TELEGRAM_BOT_LINK}?start=${referralCode}`;
+    const shareText = `Join me in earning CosmicCoin through the CosmicCoin Galaxy Airdrop!
+
+${WAPCHAT_INFO}
+
+Airdrop Instructions:
+${AIRDROP_INSTRUCTIONS.join('\n')}
+
+Telegram Mini App: ${telegramLink}
+
+Wapchat App: ${WAPCHAT_APP_LINK}`;
+
     const shareTitle = 'Join the CosmicCoin Galaxy Airdrop and Wapchat!';
 
-    // Try Web Share API first
-    if (navigator.share) {
-        navigator.share({
-            title: shareTitle,
-            text: shareText,
-            url: `${telegramLink}\n${WAPCHAT_APP_LINK}`,
-        })
-        .then(() => {
-            console.log('Successful share');
-            updateInviteStatus('Invitation sent successfully!');
-        })
-        .catch((error) => {
-            console.log('Error sharing', error);
-            showShareOptions(telegramLink, shareText, shareTitle);
-        });
-    } else {
-        showShareOptions(telegramLink, shareText, shareTitle);
-    }
+    // Show sharing options
+    showSharingOptions(shareTitle, shareText);
 }
 
-// Show share options function
-function showShareOptions(telegramLink, shareText, shareTitle) {
-    const fullShareText = `${shareText}\n\nTelegram: ${telegramLink}\nWapchat: ${WAPCHAT_APP_LINK}`;
-    console.log('Share options:');
-    console.log('1. Copy to clipboard');
-    console.log('2. Share via Email');
-    console.log('3. Share on Twitter');
-    console.log('4. Share on Facebook');
-    console.log('5. Cancel');
+// Show sharing options in a more professional manner
+function showSharingOptions(title, text) {
+    // In a real application, this would be a modal or a custom UI component
+    console.log('Share via:');
+    console.log('1. Copy to Clipboard');
+    console.log('2. Email');
+    console.log('3. Twitter');
+    console.log('4. Facebook');
+    console.log('5. WhatsApp');
 
-    // Simulating user input (in a real scenario, you'd use a proper UI or prompt)
-    const choice = prompt('Enter your choice (1-5):');
+    // Simulating user choice (in a real app, this would be handled by UI events)
+    const choice = prompt('Choose a sharing option (1-5):');
 
     switch(choice) {
         case '1':
-            copyToClipboard(fullShareText);
+            copyToClipboard(text);
             break;
         case '2':
-            window.location.href = `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(fullShareText)}`;
+            shareViaEmail(title, text);
             break;
         case '3':
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(fullShareText)}`, '_blank');
+            shareViaTwitter(text);
             break;
         case '4':
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(telegramLink)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+            shareViaFacebook(title, text);
             break;
         case '5':
-            console.log('Share cancelled');
+            shareViaWhatsApp(text);
             break;
         default:
-            console.log('Invalid choice');
+            console.log('Invalid option selected.');
     }
 }
 
 // Copy to clipboard function
 function copyToClipboard(text) {
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-            updateInviteStatus('Referral links copied to clipboard!');
-        }, (err) => {
-            console.error('Could not copy text: ', err);
-            updateInviteStatus('Failed to copy referral links. Please try again.');
-        });
+        navigator.clipboard.writeText(text)
+            .then(() => console.log('Text copied to clipboard'))
+            .catch(err => console.error('Failed to copy text: ', err));
     } else {
-        // Fallback for browsers that don't support the Clipboard API
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            updateInviteStatus('Referral links copied to clipboard!');
-        } catch (err) {
-            console.error('Could not copy text: ', err);
-            updateInviteStatus('Failed to copy referral links. Please try again.');
-        }
-        document.body.removeChild(textArea);
+        console.log('Clipboard API not available');
+        // Fallback method could be implemented here
     }
 }
 
-// Update invite status function
-function updateInviteStatus(message) {
-    console.log('Status:', message);
+// Share via email
+function shareViaEmail(subject, body) {
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+}
+
+// Share via Twitter
+function shareViaTwitter(text) {
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(twitterUrl, '_blank');
+}
+
+// Share via Facebook
+function shareViaFacebook(title, text) {
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(WAPCHAT_APP_LINK)}&quote=${encodeURIComponent(title + '\n\n' + text)}`;
+    window.open(facebookUrl, '_blank');
+}
+
+// Share via WhatsApp
+function shareViaWhatsApp(text) {
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
 }
 
 // Example usage
@@ -159,7 +169,6 @@ console.log('CosmicCoin Galaxy Airdrop');
 console.log('1. Invite Friends');
 console.log('2. Exit');
 
-// Simulating user input (in a real scenario, you'd use a proper UI or prompt)
 const choice = prompt('Enter your choice (1-2):');
 
 if (choice === '1') {
