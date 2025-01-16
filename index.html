@@ -73,11 +73,10 @@ function generateReferralCode() {
     return 'CC' + Math.random().toString(36).substr(2, 8).toUpperCase();
 }
 
-// Invite friend function
-function inviteFriend() {
-    const referralCode = generateReferralCode();
+// Create share text
+function createShareText(referralCode) {
     const telegramLink = `${TELEGRAM_BOT_LINK}?start=${referralCode}`;
-    const shareText = `Join me in earning CosmicCoin through the CosmicCoin Galaxy Airdrop!
+    return `Join me in earning CosmicCoin through the CosmicCoin Galaxy Airdrop!
 
 ${WAPCHAT_INFO}
 
@@ -87,95 +86,144 @@ ${AIRDROP_INSTRUCTIONS.join('\n')}
 Telegram Mini App: ${telegramLink}
 
 Wapchat App: ${WAPCHAT_APP_LINK}`;
-
-    const shareTitle = 'Join the CosmicCoin Galaxy Airdrop and Wapchat!';
-
-    // Show sharing options
-    showSharingOptions(shareTitle, shareText);
-}
-
-// Show sharing options in a more professional manner
-function showSharingOptions(title, text) {
-    // In a real application, this would be a modal or a custom UI component
-    console.log('Share via:');
-    console.log('1. Copy to Clipboard');
-    console.log('2. Email');
-    console.log('3. Twitter');
-    console.log('4. Facebook');
-    console.log('5. WhatsApp');
-
-    // Simulating user choice (in a real app, this would be handled by UI events)
-    const choice = prompt('Choose a sharing option (1-5):');
-
-    switch(choice) {
-        case '1':
-            copyToClipboard(text);
-            break;
-        case '2':
-            shareViaEmail(title, text);
-            break;
-        case '3':
-            shareViaTwitter(text);
-            break;
-        case '4':
-            shareViaFacebook(title, text);
-            break;
-        case '5':
-            shareViaWhatsApp(text);
-            break;
-        default:
-            console.log('Invalid option selected.');
-    }
 }
 
 // Copy to clipboard function
 function copyToClipboard(text) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text)
-            .then(() => console.log('Text copied to clipboard'))
-            .catch(err => console.error('Failed to copy text: ', err));
-    } else {
-        console.log('Clipboard API not available');
-        // Fallback method could be implemented here
-    }
+    navigator.clipboard.writeText(text)
+        .then(() => showToast('Copied to clipboard!'))
+        .catch(() => showToast('Failed to copy', 'error'));
 }
 
 // Share via email
 function shareViaEmail(subject, body) {
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 // Share via Twitter
 function shareViaTwitter(text) {
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-    window.open(twitterUrl, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 // Share via Facebook
-function shareViaFacebook(title, text) {
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(WAPCHAT_APP_LINK)}&quote=${encodeURIComponent(title + '\n\n' + text)}`;
-    window.open(facebookUrl, '_blank');
+function shareViaFacebook(text) {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(WAPCHAT_APP_LINK)}&quote=${encodeURIComponent(text)}`, '_blank');
 }
 
-// Share via WhatsApp
-function shareViaWhatsApp(text) {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, '_blank');
+// Share via Web Share API
+function shareViaWebShare(title, text, url) {
+    if (navigator.share) {
+        navigator.share({ title, text, url })
+            .then(() => showToast('Shared successfully!'))
+            .catch(() => showToast('Error sharing', 'error'));
+    } else {
+        showToast('Web Share not supported', 'error');
+    }
 }
 
-// Example usage
-console.log('CosmicCoin Galaxy Airdrop');
-console.log('1. Invite Friends');
-console.log('2. Exit');
-
-const choice = prompt('Enter your choice (1-2):');
-
-if (choice === '1') {
-    inviteFriend();
-} else {
-    console.log('Exiting...');
+// Show toast message
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '5px';
+    toast.style.color = '#fff';
+    toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
+    toast.style.zIndex = '1000';
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
 }
+
+// Create invite button and sharing options
+function createInviteButton() {
+    const container = document.createElement('div');
+    container.style.maxWidth = '400px';
+    container.style.margin = '20px auto';
+    container.style.padding = '20px';
+    container.style.backgroundColor = '#fff';
+    container.style.borderRadius = '8px';
+    container.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+
+    const title = document.createElement('h2');
+    title.textContent = 'CosmicCoin Galaxy Airdrop';
+    title.style.marginBottom = '10px';
+    container.appendChild(title);
+
+    const description = document.createElement('p');
+    description.textContent = 'Invite friends and earn together!';
+    description.style.marginBottom = '20px';
+    container.appendChild(description);
+
+    const inviteButton = document.createElement('button');
+    inviteButton.textContent = 'Invite Friends';
+    inviteButton.style.width = '100%';
+    inviteButton.style.padding = '10px';
+    inviteButton.style.backgroundColor = '#4CAF50';
+    inviteButton.style.color = '#fff';
+    inviteButton.style.border = 'none';
+    inviteButton.style.borderRadius = '5px';
+    inviteButton.style.cursor = 'pointer';
+    inviteButton.style.marginBottom = '20px';
+    container.appendChild(inviteButton);
+
+    const optionsContainer = document.createElement('div');
+    optionsContainer.style.display = 'none';
+    optionsContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    optionsContainer.style.gap = '10px';
+    container.appendChild(optionsContainer);
+
+    const shareOptions = [
+        { name: 'Copy', action: copyToClipboard },
+        { name: 'Email', action: shareViaEmail },
+        { name: 'Twitter', action: shareViaTwitter },
+        { name: 'Facebook', action: shareViaFacebook },
+        { name: 'More Options', action: shareViaWebShare, fullWidth: true }
+    ];
+
+    shareOptions.forEach(option => {
+        const button = document.createElement('button');
+        button.textContent = option.name;
+        button.style.padding = '10px';
+        button.style.backgroundColor = '#f0f0f0';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.cursor = 'pointer';
+        if (option.fullWidth) {
+            button.style.gridColumn = '1 / -1';
+        }
+        optionsContainer.appendChild(button);
+    });
+
+    inviteButton.addEventListener('click', () => {
+        optionsContainer.style.display = optionsContainer.style.display === 'none' ? 'grid' : 'none';
+    });
+
+    document.body.appendChild(container);
+
+    return { container, optionsContainer };
+}
+
+// Initialize the invite functionality
+function initInvite() {
+    const { optionsContainer } = createInviteButton();
+    const referralCode = generateReferralCode();
+    const shareText = createShareText(referralCode);
+    const shareTitle = 'Join the CosmicCoin Galaxy Airdrop and Wapchat!';
+
+    const buttons = optionsContainer.querySelectorAll('button');
+    buttons[0].addEventListener('click', () => copyToClipboard(shareText));
+    buttons[1].addEventListener('click', () => shareViaEmail(shareTitle, shareText));
+    buttons[2].addEventListener('click', () => shareViaTwitter(shareText));
+    buttons[3].addEventListener('click', () => shareViaFacebook(shareText));
+    buttons[4].addEventListener('click', () => shareViaWebShare(shareTitle, shareText, WAPCHAT_APP_LINK));
+}
+
+// Run the invite functionality when the DOM is loaded
+document.addEventListener('DOMContentLoaded', initInvite);
     </script>
 </body>
   </html>
